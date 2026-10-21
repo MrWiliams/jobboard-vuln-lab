@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>JobBoard{% block title %}{% endblock %}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; background: #f4f5f7; color: #1a1a2e; }
+    header { background: #16213e; color: #fff; padding: 12px 24px; display: flex; gap: 16px; align-items: center; }
+    header a { color: #e0e0e0; text-decoration: none; }
+    header .brand { font-weight: 700; font-size: 1.1rem; }
+    header .spacer { flex: 1; }
+    main { max-width: 860px; margin: 24px auto; padding: 0 16px; }
+    .card { background: #fff; border: 1px solid #e0e0e6; border-radius: 10px; padding: 16px 20px; margin-bottom: 14px; }
+    .card h3 { margin: 0 0 4px; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    input, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    button, .btn { background: #0f3460; color: #fff; border: 0; padding: 8px 16px; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; }
+    label { display: block; margin: 10px 0 4px; font-weight: 600; font-size: 0.9rem; }
+    .err { color: #b00020; }
+    .lab-note { background: #fff8e1; border: 1px solid #ffe082; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="{{ url_for('index') }}">JobBoard</a>
+    <a href="{{ url_for('index') }}">Jobs</a>
+    <a href="{{ url_for('search') }}">Search</a>
+    <span class="spacer"></span>
+    {% if user %}
+      <span>Hi, {{ user['username'] }}{% if user['role'] == 'admin' %} (admin){% endif %}</span>
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('profile') }}">Profile</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    {% else %}
+      <a href="{{ url_for('login') }}">Login</a>
+    {% endif %}
+  </header>
+  <main>
+    <p class="lab-note">⚠️ Intentionally vulnerable lab app — localhost only. See docs/REPORT.md.</p>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

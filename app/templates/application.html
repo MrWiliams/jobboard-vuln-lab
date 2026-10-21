@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Application #{{ app['id'] }} — {{ app['title'] }}</h2>
+  <div class="muted">Applicant user_id: {{ app['user_id'] }} · Status: {{ app['status'] }}</div>
+  <hr>
+  <h4>Cover letter</h4>
+  <p>{{ app['cover_letter'] }}</p>
+  <h4>Resume</h4>
+  <p><a href="{{ url_for('resume_download') }}?file={{ app['resume_file'] }}">{{ app['resume_file'] }}</a></p>
+</div>
+{% endblock %}

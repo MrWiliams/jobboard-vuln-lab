@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Search jobs</h2>
+<form method="get" class="card">
+  <input name="q" value="{{ q }}" placeholder="e.g. python">
+  <p><button type="submit">Search</button></p>
+</form>
+<!-- VULN #04: reflected XSS — the raw query is echoed back with |safe -->
+<p class="muted">Results for: {{ q|safe }}</p>
+{% for job in jobs %}
+  <div class="card">
+    <h3><a href="{{ url_for('job_detail', job_id=job['id']) }}">{{ job['title'] }}</a></h3>
+    <div class="muted">{{ job['company'] }} — {{ job['location'] }}</div>
+  </div>
+{% else %}
+  <p>No matches.</p>
+{% endfor %}
+{% endblock %}

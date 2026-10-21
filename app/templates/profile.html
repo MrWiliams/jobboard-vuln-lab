@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ user['username'] }}'s profile</h2>
+<div class="card">
+  <h4>Bio preview</h4>
+  <!-- VULN #05: the bio is injected into the template string and rendered (SSTI) -->
+  <div>{% block bio %}{% endblock %}</div>
+</div>
+<form method="post" class="card">
+  <label>Update bio</label>
+  <textarea name="bio" rows="4">{{ user['bio'] }}</textarea>
+  <p class="muted">Try entering <code>{% raw %}{{ 7*7 }}{% endraw %}</code> and saving…</p>
+  <p><button type="submit">Save</button></p>
+</form>
+{% endblock %}

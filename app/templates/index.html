@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Open positions</h2>
+{% if user %}<p><a class="btn" href="{{ url_for('new_job') }}">+ Post a job</a></p>{% endif %}
+{% for job in jobs %}
+  <div class="card">
+    <h3><a href="{{ url_for('job_detail', job_id=job['id']) }}">{{ job['title'] }}</a></h3>
+    <div class="muted">{{ job['company'] }} — {{ job['location'] }}</div>
+  </div>
+{% endfor %}
+{% endblock %}

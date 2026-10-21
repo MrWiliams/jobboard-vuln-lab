@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Your applications</h2>
+<p class="muted">Tip for testers: note the application IDs in the links below (see VULN #03 / IDOR).</p>
+{% for a in apps %}
+  <div class="card">
+    <h3>{{ a['title'] }} @ {{ a['company'] }}</h3>
+    <div class="muted">Status: {{ a['status'] }}</div>
+    <p><a class="btn" href="{{ url_for('view_application', app_id=a['id']) }}">View application #{{ a['id'] }}</a></p>
+  </div>
+{% else %}
+  <p>No applications yet.</p>
+{% endfor %}
+{% endblock %}

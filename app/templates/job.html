@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>{{ job['title'] }}</h2>
+  <div class="muted">{{ job['company'] }} — {{ job['location'] }}</div>
+  <hr>
+  <!-- VULN #04: stored XSS — job descriptions are rendered unescaped -->
+  <div>{{ job['description']|safe }}</div>
+</div>
+{% endblock %}
