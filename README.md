@@ -1,55 +1,46 @@
-# JobBoard Vulnerable Lab — Security Portfolio Project
+# JobBoard Vulnerable Lab
 
-> A deliberately insecure job-board web application, built to **demonstrate, exploit, and remediate** common web vulnerabilities — with a full penetration-test report to match.
+I built this as a practice target to sharpen my web security skills, and then wrote it up the way I'd hand a report to a client. It's a small job-board app (Flask + SQLite) with a bunch of real vulnerabilities baked in on purpose. The idea was to not just find the bugs, but to explain why each one happens and how I'd fix it.
 
-This is a portfolio piece that shows web security from **both sides**: the attacker's (how each flaw is found and exploited) and the defender's (why it exists and how to fix it). It is intentionally vulnerable and is designed to be run **only on your own machine**.
+If you're here from my portfolio: the writeup in [`docs/REPORT.md`](docs/REPORT.md) is the main thing worth reading.
 
----
+## Heads up before you run this
 
-## ⚠️ Ethical & Legal Notice
+This app is vulnerable on purpose. Please keep that in mind:
 
-This application contains **real, exploitable vulnerabilities on purpose**.
+- It only listens on `127.0.0.1`, so it's not reachable from anywhere but the machine it's running on. Keep it that way — don't stick it on a public server.
+- The techniques in here are only legal against a box you own or have written permission to test. Pointed at anything else they'll get you in real trouble (CFAA in the US, the Computer Misuse Act in the UK, and so on). Don't.
+- This is for learning, same category as Juice Shop, DVWA, or WebGoat.
 
-- It binds to **`127.0.0.1` (localhost) only** and should never be exposed to a network or the internet.
-- Only ever attack **this app, on a host you own**. Running these techniques against systems you do not own and have no written authorization to test is **illegal** (e.g. the US CFAA, the UK Computer Misuse Act, and equivalents worldwide).
-- This project exists for **education, skills demonstration, and authorized self-study** — the same purpose as OWASP Juice Shop, DVWA, and WebGoat.
+## The bugs
 
-If you clone this, you accept responsibility for using it legally and ethically.
+Ten issues, mapped to the OWASP Top 10 so it's easy to follow along:
 
----
-
-## What this project demonstrates
-
-| # | Vulnerability | OWASP 2021 Category | Where |
+| # | Vulnerability | OWASP 2021 | Where |
 |---|---|---|---|
-| 01 | SQL Injection (auth bypass + data exfiltration) | A03: Injection | `/login`, `/search` |
-| 02 | Broken Authentication (weak hashing, no lockout, guessable session) | A07: Identification & Auth Failures | `/login`, session cookie |
-| 03 | IDOR / Broken Access Control | A01: Broken Access Control | `/application/<id>` |
-| 04 | Stored & Reflected XSS | A03: Injection | job postings, `/search` |
-| 05 | Server-Side Template Injection (SSTI) → RCE | A03: Injection | `/profile` bio render |
-| 06 | OS Command Injection | A03: Injection | `/resume/convert` |
-| 07 | Path Traversal / arbitrary file read | A01: Broken Access Control | `/resume/download` |
-| 08 | SSRF | A10: Server-Side Request Forgery | `/jobs/import` |
-| 09 | Sensitive Data Exposure (debug mode, plaintext secrets) | A05: Security Misconfiguration | app config |
-| 10 | Missing security headers / no CSRF protection | A05: Security Misconfiguration | all responses |
+| 01 | SQL injection (auth bypass + data dump) | A03: Injection | `/login`, `/search` |
+| 02 | Broken auth (weak hashing, no lockout, guessable session) | A07: Auth Failures | `/login`, session cookie |
+| 03 | IDOR | A01: Broken Access Control | `/application/<id>` |
+| 04 | Stored & reflected XSS | A03: Injection | job postings, `/search` |
+| 05 | SSTI leading to RCE | A03: Injection | `/profile` bio |
+| 06 | OS command injection | A03: Injection | `/resume/convert` |
+| 07 | Path traversal / arbitrary file read | A01: Broken Access Control | `/resume/download` |
+| 08 | SSRF | A10: SSRF | `/jobs/import` |
+| 09 | Sensitive data exposure (debug mode, plaintext secrets) | A05: Misconfiguration | app config |
+| 10 | Missing security headers, no CSRF protection | A05: Misconfiguration | everywhere |
 
-See [`docs/REPORT.md`](docs/REPORT.md) for the full findings report and
-[`docs/METHODOLOGY.md`](docs/METHODOLOGY.md) for the testing methodology.
+Full findings are in [`docs/REPORT.md`](docs/REPORT.md), and the process I followed is in [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md).
 
----
-
-## Project layout
+## What's where
 
 ```
 pentest-lab/
-├── README.md                 # you are here
-├── requirements.txt
 ├── app/
-│   ├── app.py                # the vulnerable Flask application
+│   ├── app.py                # the vulnerable Flask app
 │   ├── db.py                 # SQLite schema + seed data
-│   ├── templates/            # Jinja2 templates (some intentionally unsafe)
-│   └── uploads/              # resume storage (path-traversal target)
-├── exploits/                 # proof-of-concept exploit scripts (one per finding)
+│   ├── templates/            # some of these are unsafe on purpose
+│   └── uploads/              # resume storage (the path-traversal target)
+├── exploits/                 # a PoC script per finding
 │   ├── 01_sqli_login_bypass.py
 │   ├── 02_sqli_data_exfil.py
 │   ├── 03_idor.py
@@ -58,15 +49,13 @@ pentest-lab/
 │   ├── 06_path_traversal.py
 │   └── 07_ssrf.py
 └── docs/
-    ├── REPORT.md             # professional penetration-test report
-    └── METHODOLOGY.md        # scope, methodology, tooling, references
+    ├── REPORT.md             # the pentest report
+    └── METHODOLOGY.md        # scope, approach, tooling
 ```
 
----
+## Running it
 
-## Setup
-
-Requires Python 3.10+.
+You'll need Python 3.10 or newer.
 
 ```bash
 cd pentest-lab
@@ -77,9 +66,9 @@ pip install -r requirements.txt
 python app/app.py
 ```
 
-The app starts on **http://127.0.0.1:5000**. The database is created and seeded automatically on first run.
+It comes up on http://127.0.0.1:5000 and seeds the database on first run, so there's no setup step beyond that.
 
-### Seeded accounts
+There are three accounts to play with:
 
 | Username | Password | Role |
 |---|---|---|
@@ -87,27 +76,16 @@ The app starts on **http://127.0.0.1:5000**. The database is created and seeded 
 | `alice` | `password123` | user |
 | `bob` | `hunter2` | user |
 
-(You don't need these to start exploiting — bypassing auth is finding #1.)
+Though honestly you don't need any of them to get started — getting in without a password is finding #1.
 
----
+## The exploit scripts
 
-## Running the exploits
-
-Each script in `exploits/` is self-contained and targets the locally running app:
+Each script in `exploits/` goes after one finding against your local instance:
 
 ```bash
 python exploits/01_sqli_login_bypass.py
 python exploits/02_sqli_data_exfil.py
-# ...etc
+# ...and so on
 ```
 
-Every script prints what it's doing, the request it sends, and the result — so they double as a live demonstration of each finding in the report.
-
----
-
-## How to present this in a portfolio
-
-1. **Lead with the report** (`docs/REPORT.md`) — it reads like a real client deliverable: executive summary, risk ratings, findings with PoC, and remediation.
-2. **Show the methodology** — demonstrates you follow a repeatable process (recon → mapping → exploitation → reporting), not just ad-hoc hacking.
-3. **Point to the fixes** — each finding includes remediation, which is what separates a security engineer from a script kiddie.
-4. **Optionally record a short demo** running a couple of the exploit scripts against the live app.
+They print what they're sending and what comes back as they go, so you can watch each attack land instead of just taking my word for it. They pair with the matching section of the report.
